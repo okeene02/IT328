@@ -304,16 +304,15 @@ class VertexCoverProblem {
 
         // Keep looking recursively:
         
-        // Try excluding the next vertex
-        if (findKVertexCoverHelper(wipCover, index+1, count))
-            return true;
-        // If that fails, try including the vertex instead
+        // Try including the vertex
         wipCover[index] = 1;
         if (findKVertexCoverHelper(wipCover, index+1, count+1))
             return true;
 
-        // This array is shared, so clean it up
+        // Try excluding the vertex
         wipCover[index] = 0;
+        if (findKVertexCoverHelper(wipCover, index+1, count))
+            return true;
 
         return false;
     }
@@ -323,13 +322,30 @@ class VertexCoverProblem {
 
     // Finds a minimum vertex cover of the graph using backtracking
     public int[] findMinVertexCover() {
-        //TODO
-        return new int[0];
+        currentMinCoverSize = this.graph.vertexCount;
+        findMinVertexCoverHelper(new int[this.graph.vertexCount], 0, 0);
+        return currentMinCover;
     }
 
     private void findMinVertexCoverHelper(int[] wipCover, int wipCoverSize, int index) {
-        //TODO
-        return;
+        if (wipCoverSize > currentMinCoverSize)
+            return;
+        if (graph.isCoveredBy(wipCover)) {
+            if (wipCoverSize < currentMinCoverSize) {
+                currentMinCover = wipCover.clone();
+                currentMinCoverSize = wipCoverSize;
+            }
+            return;
+        }
+
+        if (index == wipCover.length) {
+            return;
+        }
+
+        wipCover[index] = 1;
+        findMinVertexCoverHelper(wipCover, wipCoverSize + 1, index + 1);
+        wipCover[index] = 0;
+        findMinVertexCoverHelper(wipCover, wipCoverSize, index+1);
     }
 }
 
