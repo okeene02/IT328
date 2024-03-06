@@ -29,6 +29,12 @@ public class findVCover {
             
             int[] cover = vertexCoverProblem.findMinVertexCover();
 
+            int coverSize = 0;
+            for (int i = 0; i < cover.length; i++) {
+                if (cover[i] == 1)
+                    coverSize++;
+            }
+
             // Calculate time spent
             long total_time = System.currentTimeMillis() - start_time;
 
@@ -37,7 +43,7 @@ public class findVCover {
                 cliqueNum + 1, 
                 vertexCoverProblem.graph.vertexCount, 
                 vertexCoverProblem.graph.edgeCount, 
-                vertexCoverProblem.currentMinCoverSize,
+                coverSize,
                 total_time, 
                 coverToString(cover));
         }

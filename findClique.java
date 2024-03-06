@@ -31,6 +31,12 @@ public class findClique {
             VertexCoverProblem vertexCoverProblem = VertexCoverProblem.createFromCliqueProblem(cliqueProblem);
             int[] cover = vertexCoverProblem.findMinVertexCover();
             int[] clique = CliqueProblem.createCliqueFromCover(cover);
+            
+            int cliqueSize = 0;
+            for (int i = 0; i < cover.length; i++) {
+                if (clique[i] == 1)
+                    cliqueSize++;
+            }
 
             // Calculate time spent
             long total_time = System.currentTimeMillis() - start_time;
@@ -40,7 +46,7 @@ public class findClique {
                 cliqueNum + 1, 
                 cliqueProblem.graph.vertexCount, 
                 cliqueProblem.graph.edgeCount, 
-                cliqueProblem.graph.vertexCount - vertexCoverProblem.currentMinCoverSize,
+                cliqueSize,
                 total_time, 
                 cliqueToString(clique));
         }

@@ -47,34 +47,50 @@ class VertexCoverProblem {
         return false;
     }
 
-    int[] currentMinCover;
-    int currentMinCoverSize;
-
     // Finds a minimum vertex cover of the graph using backtracking
     public int[] findMinVertexCover() {
-        currentMinCoverSize = this.graph.vertexCount;
-        findMinVertexCoverHelper(new int[this.graph.vertexCount], 0, 0);
-        return currentMinCover;
+        return findMinVertexCoverHelper(new int[this.graph.vertexCount]);
     }
 
-    private void findMinVertexCoverHelper(int[] wipCover, int wipCoverSize, int index) {
-        if (wipCoverSize > currentMinCoverSize)
-            return;
-        if (graph.isCoveredBy(wipCover)) {
-            if (wipCoverSize < currentMinCoverSize) {
-                currentMinCover = wipCover.clone();
-                currentMinCoverSize = wipCoverSize;
+    int[] findMinVertexCoverHelper(int[] cover) {
+        if (graph.isCoveredBy(cover))
+            return cover;
+
+        int nextVertex = 0;
+        for (int i = 0; i < cover.length; i++) {
+            if (cover[i] == 0) {
+                nextVertex = i;
+                break;
             }
-            return;
         }
 
-        if (index == wipCover.length) {
-            return;
+        int[] coverWith = cover.clone();
+        coverWith[nextVertex] = 1;
+        coverWith = findMinVertexCoverHelper(coverWith);
+
+        int[] coverWithout = cover.clone();
+        for (int i = 0; i < graph.vertexCount; i++) {
+            if (graph.adjacencyMatrix[nextVertex][i] == 1)
+                coverWithout[i] = 1;
+        }
+        coverWithout[nextVertex] = -1;
+        coverWithout = findMinVertexCoverHelper(coverWithout);
+
+        int withCount = 0;
+        int withoutCount = 0;
+
+        for (int i = 0; i < graph.vertexCount; i++) {
+            if (coverWith[i] == 1)
+                withCount++;
+            if (coverWithout[i] == 1)
+                withoutCount++;
         }
 
-        wipCover[index] = 1;
-        findMinVertexCoverHelper(wipCover, wipCoverSize + 1, index + 1);
-        wipCover[index] = 0;
-        findMinVertexCoverHelper(wipCover, wipCoverSize, index+1);
+        if (withCount > withoutCount)
+            return coverWithout;
+        else
+            return coverWith;
+            
     }
+
 }
