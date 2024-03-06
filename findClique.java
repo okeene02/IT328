@@ -13,33 +13,56 @@ public class findClique {
 
         // Input file
         String filename = args[0];
+
         // Create array of graphs (represented by adjacency matrix)
         adjacencyMatrix[] graphArray = readGraphFile(filename);
 
+        // Print header
         System.out.printf("* Max Cliques in %s (reduced to K-Vertex Cover) *\n", filename);
         System.out.println("(|V|,|E|) (size, ms used) Cliques");
+
+        // Iterate through each graph
         for(int graphNum = 0; graphNum < graphArray.length; graphNum++){
+            // Results variables
             adjacencyMatrix thisMatrix = graphArray[graphNum];
             int graphSize = thisMatrix.size, edges = thisMatrix.edges;
-            long start_time = System.currentTimeMillis();
             int cliqueSize = 0;
-            String cliques = "";
+            String cliques;
+            long start_time = System.currentTimeMillis();
             
-            adjacencyMatrix complement = adjacencyMatrix.createComplement(graphArray[graphNum]);
+            // Find a solution for the current graph
+            ArrayList<Integer> solution = solve(graphArray[graphNum]);
+            cliques = solution.toString();
 
-            // TODO hand off new vertex cover problem (complement graph) to part C
+            // Calculate time spent
+            long total_time = System.currentTimeMillis() - start_time;
 
-            System.out.printf("G%d ( %d, %d) (size = %d ms=%d) {%s}\n", 
+            // Print information
+            System.out.printf("G%d ( %d, %d) (size = %d ms=%d) %s\n", 
                 graphNum + 1, 
                 graphSize, 
                 edges, 
                 cliqueSize,
-                System.currentTimeMillis() - start_time, 
+                System.currentTimeMillis() - total_time, 
                 cliques);
         }
     }
 
-    static adjacencyMatrix[] readGraphFile(String filename) throws FileNotFoundException {
+    public static ArrayList<Integer> solve(adjacencyMatrix graph){
+        // reduce clique problem into vertex cover problem (create complement)
+        adjacencyMatrix vcover = adjacencyMatrix.createComplement(graph);
+
+        // pass vertex cover problem to findVCover to solve
+        ArrayList<Integer> returnList, solution = findVCover.solve(vcover);
+
+        // if a vertex is in the vertex cover solution, do not include it in the clique solution
+        for(int i = 0; i < graph.size; i++){
+            if(!solution.contains(i)) returnList.add(i);
+        }
+        return returnList;
+    }
+
+    public static adjacencyMatrix[] readGraphFile(String filename) throws FileNotFoundException {
         Scanner in = new Scanner(new FileReader(filename));
 
         // List of graphs. Total number of lines is unknown, so use dynamic array.
@@ -68,7 +91,7 @@ public class findClique {
         return graphList.toArray(new adjacencyMatrix[0]);
     }
 
-    static class adjacencyMatrix{
+    public static class adjacencyMatrix{
         int size, edges;
         int[][] this2Darray;
 
