@@ -87,11 +87,20 @@ class VertexCoverProblem {
      * A cover as described in {@link Graph#isCoveredBy(int[])}
      */
     public int[] findMinVertexCover() {
-        return findMinVertexCoverHelper(new int[this.graph.vertexCount]);
+        int[] cover = findMinVertexCoverHelper(new int[this.graph.vertexCount]);
+        // Convert to 0-excluded 1-included format
+        for (int i = 0; i < cover.length; i++) {
+            if (cover[i] < 0)
+                cover[i] = 0;
+        }
+        return cover;
     }
 
     /**
      * Recursive helper function for {@link #findMinVertexCover()}.
+     * Vertices intentionally excluded are marked -1
+     * Vertices included are marked 1
+     * Vertices not yet considered are marked 0
      * @param cover
      * An incomplete cover
      * @return

@@ -65,10 +65,10 @@ public class Graph {
         for(int i = 0; i < this.vertexCount; i++){
             for(int j = 0; j < this.vertexCount; j++){
                 adjacencyMatrix[i][j] = scanner.nextInt();
-                this.edgeCount++;
+                this.edgeCount += adjacencyMatrix[i][j];
             }
         }
-        this.edgeCount -= vertexCount;
+        this.edgeCount = (this.edgeCount - vertexCount) / 2;
     }
 
     /**
