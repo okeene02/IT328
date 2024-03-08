@@ -3,6 +3,12 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * A program for solving a large number of clique problems
+ * from a file. Converts each clique problem to a vertex cover
+ * problem, which is then solved and the solution is converted
+ * to a clique solution.
+ */
 public class findClique {
     public static void main(String[] args) throws FileNotFoundException {
         // Check args
@@ -52,6 +58,16 @@ public class findClique {
         }
     }
 
+    /**
+     * Converts a clique into a string representation.
+     * Each clique represents a mask indicating which vertices
+     * are included. The string versions lists out the vertices included.
+     * So [0, 0, 0, 1, 1] is represented "{3, 4}"
+     * @param clique
+     * The clique to convert
+     * @return
+     * The string representation of the clique
+     */
     public static String cliqueToString(int[] clique) {
         ArrayList<Integer> vertices = new ArrayList<Integer>();
 
@@ -70,6 +86,15 @@ public class findClique {
         return ret + "}";
     }
 
+    /**
+     * Creates an array of CliqueProblems from the contents of 
+     * a file of graphs
+     * @param filename
+     * The file to read from
+     * @return
+     * An array of CliqueProblem's read from the file
+     * @throws FileNotFoundException
+     */
     public static CliqueProblem[] readGraphFile(String filename) throws FileNotFoundException {
         Scanner in = new Scanner(new FileReader(filename));
 
@@ -81,15 +106,8 @@ public class findClique {
             int size = in.nextInt();
 
             if(size == 0) break;
-            // Use 2d arrays to make adjacency matrix
-            int[][] adjacencyMatrix = new int[size][size];
-            for(int i = 0; i < size; i++){
-                for(int j = 0; j < size; j++){
-                    adjacencyMatrix[i][j] = in.nextInt();
-                }
-            }
             CliqueProblem cliqueProblem = new CliqueProblem();
-            cliqueProblem.graph = new Graph(size, adjacencyMatrix);
+            cliqueProblem.graph = new Graph(size, in);
             graphList.add(cliqueProblem);
         }
 

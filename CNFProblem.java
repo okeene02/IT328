@@ -1,13 +1,23 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * Class representing a CNF SAT problem (a boolean
+ * satisfiability problem where the formula is in
+ * conjunctive normal form).
+ * 
+ * Provides methods for reading from a string, managing
+ * variable assignments, and generating random assignments.
+ */
 class CNFProblem {
     int[] cnf;
     int varCount;
     int clauseCount;
 
-    // Converts a CNF to a string such as:
-    // ( 2|-1|-1)∧(-3|-2|-4)∧( 4|-3|-1)
+    /**
+     * Converts this CNF into a string such as ( 2|-1|-1)∧(-3|-2|-4)∧( 4|-3|-1)
+     */
+    @Override
     public String toString() {
         String ret = "";
         int i;
@@ -18,25 +28,38 @@ class CNFProblem {
         return ret;
     }
 
-    // Given both a CNF and an assignment, fills in each literal for its value.
-    // Ex. ( T| T| T)∧( X| F| T)∧( F| X| T)
+    /**
+     * Creates a string showing the assignment of variables to the CNF.
+     * Ex. ( T| T| T)∧( X| F| T)∧( F| X| T)
+     * @param assignment
+     * An array such that assignment[variableNumber] == 1 (true) | 0 (unspecified) | -1 (false)
+     * @return
+     * A string representing the assignment of variables to the CNF
+     */
     String toStringWithAssignment(int[] assignment) {
         String ret = "";
         int i;
         for (i = 0; i < (cnf.length / 3) - 1; i++) {
             ret += String.format("(%2s|%2s|%2s)∧", 
-                getAssignmentCharFromLiteral(cnf[3*i], assignment),
-                getAssignmentCharFromLiteral(cnf[3*i+1], assignment),
-                getAssignmentCharFromLiteral(cnf[3*i+2], assignment));
+                getAssignmentCharFromVariable(cnf[3*i], assignment),
+                getAssignmentCharFromVariable(cnf[3*i+1], assignment),
+                getAssignmentCharFromVariable(cnf[3*i+2], assignment));
         }
         ret += String.format("(%2s|%2s|%2s)", 
-            getAssignmentCharFromLiteral(cnf[3*i], assignment),
-            getAssignmentCharFromLiteral(cnf[3*i+1], assignment),
-            getAssignmentCharFromLiteral(cnf[3*i+2], assignment));
+            getAssignmentCharFromVariable(cnf[3*i], assignment),
+            getAssignmentCharFromVariable(cnf[3*i+1], assignment),
+            getAssignmentCharFromVariable(cnf[3*i+2], assignment));
         return ret;
     }
 
-    // Converts an assignment number into the respective character
+    /**
+     * Given an assignment number (1, 0, -1 for true, either, false), returns
+     * the appropriate character
+     * @param assignment
+     * The assignment number
+     * @return
+     * The character representing the assignment
+     */
     static char getAssignmentCharFromValue(int assignment) {
         switch (assignment) {
             case -1:
@@ -51,20 +74,33 @@ class CNFProblem {
         }
     }
 
-    // Given an index into a CNF, finds the character for that variable's assignment
-    static char getAssignmentCharFromLiteral(int literal, int[] assignment) {
+    /**
+     * Converts a variable from the cnf into the appropriate assignment character
+     * @param variable
+     * The variable being assigned. Can be negative, represented the negated variable
+     * @param assignment
+     * The array of variable assignments
+     * @return
+     * The appropriate character
+     */
+    static char getAssignmentCharFromVariable(int variable, int[] assignment) {
         int val = 0;
-        if (literal < 0) {
-            val = -assignment[-literal];
+        if (variable < 0) {
+            val = -assignment[-variable];
         }
         else {
-            val = assignment[literal];
+            val = assignment[variable];
         }
         return getAssignmentCharFromValue(val);
     }
 
-    // Converts a CNF assignment into a string such as below:
-    // [1:F, 2:T, 3:X]
+    /**
+     * Converts a CNF assignment into a string such as: [1:F, 2:T, 3:X]
+     * @param assignment
+     * The assignment to be converted to a string
+     * @return
+     * The string representation of the assignment
+     */
     static String assignmentToString(int[] assignment) {
         String ret = "[";
         int i;
@@ -75,6 +111,14 @@ class CNFProblem {
         return ret;
     }
 
+    /**
+     * Creates a CNFProblem from a string. The string consist a list of numbers, such
+     * that the number of numbers is divisible by three.
+     * @param str
+     * The string to be converted
+     * @return
+     * The CNFProblem represented by the string
+     */
     public static CNFProblem fromString(String str) {
 
             Scanner scanner = new Scanner(str);
@@ -87,6 +131,7 @@ class CNFProblem {
             int varCount = 1;
             
             // Convert the dynamic array to a static array (mostly just for indexing with brackets)
+            // Also counts the number of variables
             int[] cnfArr = new int[cnfList.size()];
             for (int i = 0; i < cnfArr.length; i++) {
                 cnfArr[i] = cnfList.get(i);
@@ -94,6 +139,7 @@ class CNFProblem {
                     varCount = Math.abs(cnfArr[i]);
             }
 
+            // Create the CNFProblem instance
             CNFProblem ret = new CNFProblem();
             ret.cnf = cnfArr;
             ret.clauseCount = cnfArr.length / 3;
@@ -104,9 +150,14 @@ class CNFProblem {
             return ret;
     }
 
-    // Creates a CNF assignment from a clique. Iterates
-    // over the literals selected for the clique and marks
-    // the respective variables true (1), false (-1), or either (0) 
+    /**
+     * Given a solution to the corresponding clique problem,
+     * create a solution to a CNF problem. Iterates over the 
+     * literals selected for the clique and marks the
+     * respective variables true (1), false (-1), or either (0)
+     * @param clique
+     * @return
+     */
     int[] createCNFAssignmentFromClique(int[] clique) {
         int[] assignment = new int[varCount + 1];
 
@@ -122,8 +173,12 @@ class CNFProblem {
         return assignment;
     }
 
-    // Randomly generates a CNF assignment with each
-    // variable having a 50% chance of being true.
+    /**
+     * Creates a random CNF assignments. Each variable
+     * has a 50% chance of being true.
+     * @return
+     * The random assignment
+     */
     int[] getRandomAssignment() {
         int[] assignment = new int[varCount + 1];
 

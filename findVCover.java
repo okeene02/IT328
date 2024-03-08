@@ -3,6 +3,11 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * A program to solve a number of vertex cover
+ * problems from a file of graphs. Solves each
+ * problem directly, without reductions
+ */
 public class findVCover {
     public static void main(String[] args) throws FileNotFoundException {
         // Check args
@@ -49,14 +54,25 @@ public class findVCover {
         }
     }
 
+    /**
+     * Converts a clique into a string representation. 
+     * Ex. [0,1,0,1] is converted to "{1,3}"
+     * @param clique
+     * The clique to convert
+     * @return
+     * The string representation of the clique
+     */
     public static String coverToString(int[] clique) {
+        // A dynamic array to collect all of the included vertices
         ArrayList<Integer> vertices = new ArrayList<Integer>();
 
+        // Place every included vertex into the array
         for (int i = 0; i < clique.length; i++) {
             if (clique[i] == 1)
                 vertices.add(i);
         }
 
+        // Format the array
         String ret = "{";
         for (int i = 0; i < vertices.size() - 1; i++) {
             ret += vertices.get(i) + ",";
@@ -66,6 +82,16 @@ public class findVCover {
 
         return ret + "}";
     }
+    /**
+     * 
+     * Creates an array of VertexCoverProblem's from the 
+     * contents of a file of graphs
+     * @param filename
+     * The file to read from
+     * @return
+     * An array of CliqueProblem's read from the file
+     * @throws FileNotFoundException
+     */
     public static VertexCoverProblem[] readGraphFile(String filename) throws FileNotFoundException {
         Scanner in = new Scanner(new FileReader(filename));
 
@@ -77,15 +103,8 @@ public class findVCover {
             int size = in.nextInt();
 
             if(size == 0) break;
-            // Use 2d arrays to make adjacency matrix
-            int[][] adjacencyMatrix = new int[size][size];
-            for(int i = 0; i < size; i++){
-                for(int j = 0; j < size; j++){
-                    adjacencyMatrix[i][j] = in.nextInt();
-                }
-            }
             VertexCoverProblem vertexCoverProblem = new VertexCoverProblem();
-            vertexCoverProblem.graph = new Graph(size, adjacencyMatrix);
+            vertexCoverProblem.graph = new Graph(size, in);
             graphList.add(vertexCoverProblem);
         }
 

@@ -3,6 +3,13 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * A program for solving a large number of CNF SAT problems from
+ * a provided file. Coverts each CNF problem into a clique problem,
+ * which is itself converted into a vertex cover problem. The vertex
+ * cover problem is solved and then chain converted back to a CNF
+ * solution.
+ */
 class find3SAT {
     public static void main(String[] args) throws FileNotFoundException {
         // Make sure arguments are correct
@@ -76,6 +83,16 @@ class find3SAT {
 
     }
 
+    /**
+     * Reads a collection of CNF problems from a file. Each line
+     * should have a list of numbers representing the CNF form.
+     * So 1 2 3 -4 -5 -6 would represent (a || b || c) && (~d || ~e || ~f)
+     * @param filename
+     * The name of the file to read from
+     * @return
+     * An array of CNFProblems read from the file
+     * @throws FileNotFoundException
+     */
     static CNFProblem[] readCNFFile(String filename) throws FileNotFoundException {
         Scanner in = new Scanner(new FileReader(filename));
 
