@@ -1,6 +1,8 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DFA {
     int numberOfStates;
@@ -10,6 +12,17 @@ public class DFA {
     ArrayList<Integer> acceptingStates;
     ArrayList<String> inputStrings;
     final int NUM_INPUT_STRINGS = 30;
+
+    public DFA(int numberOfStates, ArrayList<Character> alphabet, ArrayList<ArrayList<Integer>> transitionTable, 
+               int initialState, ArrayList<Integer> acceptingStates, ArrayList<String> inputStrings) {
+            
+            this.numberOfStates = numberOfStates;
+            this.alphabet = alphabet;
+            this.transitionTable = transitionTable;
+            this.initialState = initialState;
+            this.acceptingStates = acceptingStates;
+            this.inputStrings = inputStrings;
+    }
 
     public DFA(NFA dfa) {
 
@@ -47,9 +60,10 @@ public class DFA {
         }
 
         this.numberOfStates = states.size();
+        Collections.sort(this.acceptingStates);
     }
 
-    public void minimize() {
+    public DFA minimize() {
         // Distinguishability table
         int[][] dTable = new int[this.numberOfStates][this.numberOfStates];
 
@@ -61,7 +75,7 @@ public class DFA {
                 }
             }
         }
-        
+
         boolean changed = true;
         while(changed) {
             changed = false;
@@ -121,30 +135,77 @@ public class DFA {
             }
         }
 
-        this.acceptingStates = newAcceptingStates;
-        this.numberOfStates = newStates.size();
-        this.transitionTable = newTransitionTable;
+        Collections.sort(newAcceptingStates);
+        return new DFA(newStates.size(), this.alphabet, newTransitionTable, this.initialState,
+        newAcceptingStates, this.inputStrings);
+    }
 
+    public int step(int state, int input) {
+        return this.transitionTable.get(state).get(input);
+    }
+
+    public int run(String inputString) {
+        int state = this.initialState;
+        for (char c : inputString.toCharArray()) {
+            int input = this.alphabet.indexOf(c);
+            state = step(state, input);
+        }
+        return state;
+    }
+
+    public boolean[] testStrings() {
+
+        boolean[] ret = new boolean[this.inputStrings.size()];
+
+        for (int i = 0; i < this.inputStrings.size(); i++) {
+            String s = this.inputStrings.get(i);
+            int state = this.run(s);
+            if (this.acceptingStates.contains(state)) {
+                ret[i] = true;
+            }
+        }
+        return ret;
+    }
+
+    public void printStringTests() {
+        boolean[] results = this.testStrings();
+        int yesCount = 0;
+        int noCount = 0;
+        for (int i = 0; i < results.length; i++) {
+            boolean result = results[i];
+            if (result) {
+                System.out.print("Yes  ");
+                yesCount++;
+            }
+            else {
+                System.out.print("No   ");
+                noCount++;
+            }
+            if (i == results.length / 2 - 1) {
+                System.out.println();
+            }
+        }
+        System.out.println("\n");
+        System.out.printf("Yes:%d No:%d\n", yesCount, noCount);
     }
 
     public void print(){
-        System.out.println("|Q|: " + numberOfStates);
-        System.out.println("Sigma: " + alphabet.toString());
-        System.out.println("----------------------------------------");
+        System.out.print("Sigma:");
+        for (char c : this.alphabet)
+            System.out.printf("%6c", c);
+        System.out.println();
+
+        System.out.println("--------------------------------");
         for(int i = 0; i < numberOfStates; i++){
-            System.out.print(i + ": ");
+            System.out.printf("%5d:", i);
             for(int j = 0; j < alphabet.size(); j++){
-                System.out.print(transitionTable.get(i).get(j).toString() + ' ');
+                System.out.printf("%6d", transitionTable.get(i).get(j));
             }
             System.out.println();
         }
-        System.out.println("----------------------------------------");
-        System.out.println("Initial State: " + initialState);
-        System.out.println("Accepting State(s): " + acceptingStates.toString());
+        System.out.println("--------------------------------");
+        System.out.printf("%d:   Initial State\n", initialState);
+        System.out.printf("%s:   Accepting State(s)\n", String.join(",", acceptingStates.stream().map(Object::toString).collect(Collectors.toList())));
         System.out.println();
-        System.out.println("-- Input strings for testing -----------");
-        for(int i = 0; i < NUM_INPUT_STRINGS; i++){
-            System.out.println(inputStrings.get(i));
-        }
     }
 }
