@@ -167,4 +167,26 @@ public class NFA {
             System.out.println(inputStrings.get(i));
         }
     }
+
+    public Set<Integer> lambdaClosure(Set<Integer> states) {
+        Set<Integer> ret = new HashSet<>(states);
+        while (true) {
+            Set<Integer> newStates = new HashSet<>(numberOfStates);
+            for (Integer state : ret) {
+                newStates.addAll(transitionTable.get(state).get(alphabet.size()));
+            }
+            if (ret.containsAll(newStates))
+                break;
+            ret.addAll(newStates);
+        }
+        return ret;
+    }
+
+    public Set<Integer> step(Set<Integer> states, int input) {
+        Set<Integer> ret = new HashSet<Integer>(this.numberOfStates);
+        for (Integer state : states) {
+            ret.addAll(this.transitionTable.get(state).get(input));
+        }
+        return lambdaClosure(ret);
+    }
 }
