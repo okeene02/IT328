@@ -41,7 +41,7 @@ public class DFA {
                 this.transitionTable.get(stateIndex).add(nextStateIndex);
 
                 for (int acceptingState : dfa.acceptingStates)
-                    if (nextState.contains(acceptingState))
+                    if (nextState.contains(acceptingState) && !this.acceptingStates.contains(nextStateIndex))
                         this.acceptingStates.add(nextStateIndex);
             }
         }
