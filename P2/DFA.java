@@ -48,6 +48,85 @@ public class DFA {
 
         this.numberOfStates = states.size();
     }
+
+    public void minimize() {
+        // Distinguishability table
+        int[][] dTable = new int[this.numberOfStates][this.numberOfStates];
+
+        for (int acceptingState : this.acceptingStates) {
+            for (int state = 0; state < this.numberOfStates; state++) {
+                if (!this.acceptingStates.contains(state)) {
+                    dTable[state][acceptingState] = 1;
+                    dTable[acceptingState][state] = 1;
+                }
+            }
+        }
+        
+        boolean changed = true;
+        while(changed) {
+            changed = false;
+            for (int state1 = 0; state1 < this.numberOfStates; state1++) {
+                for (int state2 = 0; state2 < this.numberOfStates; state2++) {
+                    if (dTable[state1][state2] == 1)
+                        continue;
+
+                    for (int input = 0; input < this.alphabet.size(); input++) {
+                        int nextState1 = this.transitionTable.get(state1).get(input);
+                        int nextState2 = this.transitionTable.get(state2).get(input);
+                        if (dTable[nextState1][nextState2] == 1) {
+                            dTable[state1][state2] = 1;
+                            dTable[state2][state1] = 1;
+                            changed = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        ArrayList<Integer> oldToNewStateMap = new ArrayList<>();
+        ArrayList<Integer> newToOldStateMap = new ArrayList<>();
+
+        ArrayList<Set<Integer>> newStates = new ArrayList<>();
+        ArrayList<Integer> newAcceptingStates = new ArrayList<>();
+
+        for (int state = 0; state < this.numberOfStates; state++) {
+            Set<Integer> newState = new HashSet<>(1);
+            newState.add(state);
+            for (int otherState = 0; otherState < this.numberOfStates; otherState++) {
+                if (dTable[state][otherState] == 0) {
+                    newState.add(otherState);
+                }
+            }
+            if (!newStates.contains(newState)) {
+                newStates.add(newState);
+                if (this.acceptingStates.contains(state)) {
+                    newAcceptingStates.add(newStates.size() - 1);
+                }
+                newToOldStateMap.add(state);
+            }
+            int newStateIndex = newStates.indexOf(newState);
+            oldToNewStateMap.add(newStateIndex);
+        }
+
+        ArrayList<ArrayList<Integer>> newTransitionTable = new ArrayList<>();
+
+        for (int newState = 0; newState < newStates.size(); newState++) {
+            newTransitionTable.add(new ArrayList<>());
+            for (int input = 0; input < this.alphabet.size(); input++) {
+                int oldStateIndex = newToOldStateMap.get(newState);
+                int oldNextState = this.transitionTable.get(oldStateIndex).get(input);
+                int newNextState = oldToNewStateMap.get(oldNextState);
+                newTransitionTable.get(newState).add(newNextState);
+            }
+        }
+
+        this.acceptingStates = newAcceptingStates;
+        this.numberOfStates = newStates.size();
+        this.transitionTable = newTransitionTable;
+
+    }
+
     public void print(){
         System.out.println("|Q|: " + numberOfStates);
         System.out.println("Sigma: " + alphabet.toString());
