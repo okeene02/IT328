@@ -146,7 +146,7 @@ public class NFA {
             e.printStackTrace();
         }
     }
-
+    // Print the NFA
     public void print(){
         System.out.println("|Q|: " + numberOfStates);
         System.out.println("Sigma: " + alphabet.toString());
@@ -168,25 +168,37 @@ public class NFA {
         }
     }
 
+    // Complete a set of states with respect to lambda transitions
     public Set<Integer> lambdaClosure(Set<Integer> states) {
+        // Initialize a new set using the input set
         Set<Integer> ret = new HashSet<>(states);
+        // Loop until now new states are added
         while (true) {
+            // Create a set for states accessible using one lambda transition
             Set<Integer> newStates = new HashSet<>(numberOfStates);
+            // Loop over all states in the current set
             for (Integer state : ret) {
+                // Add all states from lambda transitions
                 newStates.addAll(transitionTable.get(state).get(alphabet.size()));
             }
+            // Break if there are no new states
             if (ret.containsAll(newStates))
                 break;
+            // Add new states to the return set
             ret.addAll(newStates);
         }
         return ret;
     }
 
+    // Perform one step of the NFA given a set of states and input character index
+    // Assumes the input set is closed under lambda transitions
     public Set<Integer> step(Set<Integer> states, int input) {
         Set<Integer> ret = new HashSet<Integer>(this.numberOfStates);
+        // Loop over current set of states and perform the transition
         for (Integer state : states) {
             ret.addAll(this.transitionTable.get(state).get(input));
         }
+        // Lambda close the output
         return lambdaClosure(ret);
     }
 }

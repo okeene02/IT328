@@ -13,6 +13,7 @@ public class DFA {
     ArrayList<String> inputStrings;
     final int NUM_INPUT_STRINGS = 30;
 
+    // Construct a DFA from components
     public DFA(int numberOfStates, ArrayList<Character> alphabet, ArrayList<ArrayList<Integer>> transitionTable, 
                int initialState, ArrayList<Integer> acceptingStates, ArrayList<String> inputStrings) {
             
@@ -24,49 +25,69 @@ public class DFA {
             this.inputStrings = inputStrings;
     }
 
+    // Construct a DFA from an NFA
     public DFA(NFA dfa) {
 
+        // Alphabet and input strings remain the same
         this.alphabet = new ArrayList<>(dfa.alphabet);
         this.inputStrings = new ArrayList<>(dfa.inputStrings);
 
+        // Each state of the created DFA will correspond to a set of states of the DFA
         ArrayList<Set<Integer>> states = new ArrayList<>();
 
+        // The initial state of the DFA will correspond to the lambda closure of the initial state of the NFA
         Set<Integer> initialState = new HashSet<>(1);
         initialState.add(dfa.initialState);
         initialState = dfa.lambdaClosure(initialState);
 
+        // Begin with the initial state (which is given index 0)
         states.add(initialState);
         this.initialState = 0;
+
+        // Prepare the new transition table and list of accepting states
         this.transitionTable = new ArrayList<>();
         this.acceptingStates = new ArrayList<>();
 
+        // Main loop. Iterates over the states array, whose size may increase within the loop
         for (int stateIndex = 0; stateIndex < states.size(); stateIndex++) {
+            // Prepare a new row of the transition table
             this.transitionTable.add(new ArrayList<>());
 
+            // Get the set of states currently being examined
             Set<Integer> state = states.get(stateIndex);
+
+            // Check if this set of states is an accepting state. If so add its index to the DFA's accepting states
+            for (int acceptingState : dfa.acceptingStates)
+                if (state.contains(acceptingState))
+                    this.acceptingStates.add(stateIndex);
+
+            // Loop over each character in the alphabet to generate the current row of the transition table
             for (int input = 0; input < this.alphabet.size(); input++) {
+                // Create the next set of states
                 Set<Integer> nextState = dfa.step(state, input);
 
+                // Check if this set has already been seen, append it to the working list if it hasn't
                 if (!states.contains(nextState))
                     states.add(nextState);
 
+                // Get the index of the next set within the working collection (this will be the id of the corresponding DFA state)
                 int nextStateIndex = states.indexOf(nextState);
+                // Fill in the current entry in the transition table
                 this.transitionTable.get(stateIndex).add(nextStateIndex);
-
-                for (int acceptingState : dfa.acceptingStates)
-                    if (nextState.contains(acceptingState) && !this.acceptingStates.contains(nextStateIndex))
-                        this.acceptingStates.add(nextStateIndex);
             }
         }
 
+        // Calculate the size of the new DFA
         this.numberOfStates = states.size();
-        Collections.sort(this.acceptingStates);
     }
 
+    // Create a minimized version of this DFA using the method taught in class
     public DFA minimize() {
         // Distinguishability table
+        // dTable[a][b] = 1 means that state a is distinguishable from state b
         int[][] dTable = new int[this.numberOfStates][this.numberOfStates];
 
+        // Initialize the table with the knowledge that accepting states are distinguishable from non-accepting states
         for (int acceptingState : this.acceptingStates) {
             for (int state = 0; state < this.numberOfStates; state++) {
                 if (!this.acceptingStates.contains(state)) {
@@ -76,9 +97,12 @@ public class DFA {
             }
         }
 
+        // Continually iterate over the table until it remains unchanged
         boolean changed = true;
         while(changed) {
+            // Initially the table is unchanged
             changed = false;
+            // Iterate over the table
             for (int state1 = 0; state1 < this.numberOfStates; state1++) {
                 for (int state2 = 0; state2 < this.numberOfStates; state2++) {
                     if (dTable[state1][state2] == 1)
@@ -98,20 +122,28 @@ public class DFA {
             }
         }
 
+        // Create mappings between unminimized states and minimized states
         ArrayList<Integer> oldToNewStateMap = new ArrayList<>();
         ArrayList<Integer> newToOldStateMap = new ArrayList<>();
 
+        // Prepare the structures for storing the combined states and accepting states
         ArrayList<Set<Integer>> newStates = new ArrayList<>();
         ArrayList<Integer> newAcceptingStates = new ArrayList<>();
 
+        // Iterate over the states of the unminimized DFA
         for (int state = 0; state < this.numberOfStates; state++) {
+            // Prepare the set of states indistinguishable from this state
             Set<Integer> newState = new HashSet<>(1);
+            // The current state is obviously a member
             newState.add(state);
             for (int otherState = 0; otherState < this.numberOfStates; otherState++) {
                 if (dTable[state][otherState] == 0) {
                     newState.add(otherState);
                 }
             }
+
+            // Add this set of states to the collection if we haven't already
+            // Also update the newToOld mapping
             if (!newStates.contains(newState)) {
                 newStates.add(newState);
                 if (this.acceptingStates.contains(state)) {
@@ -119,12 +151,16 @@ public class DFA {
                 }
                 newToOldStateMap.add(state);
             }
+
+            // Regardless of whether this state is new, update to oldToNew mapping
             int newStateIndex = newStates.indexOf(newState);
             oldToNewStateMap.add(newStateIndex);
         }
 
+        // Prepare the new transition table
         ArrayList<ArrayList<Integer>> newTransitionTable = new ArrayList<>();
 
+        // Iterate over the new states and inputs and determine the transition using the previously created DFA maps
         for (int newState = 0; newState < newStates.size(); newState++) {
             newTransitionTable.add(new ArrayList<>());
             for (int input = 0; input < this.alphabet.size(); input++) {
@@ -135,15 +171,17 @@ public class DFA {
             }
         }
 
-        Collections.sort(newAcceptingStates);
         return new DFA(newStates.size(), this.alphabet, newTransitionTable, this.initialState,
         newAcceptingStates, this.inputStrings);
     }
 
+    // Run one step of the DFA. Returns the new state given the current state and input character
     public int step(int state, int input) {
         return this.transitionTable.get(state).get(input);
     }
 
+    // Runs this DFA for a string of characters and returns the final state
+    // Assumes that the string is made up only of characters within the alphabet
     public int run(String inputString) {
         int state = this.initialState;
         for (char c : inputString.toCharArray()) {
@@ -153,6 +191,7 @@ public class DFA {
         return state;
     }
 
+    // Tests all of the associated input strings and returns a boolean array indicating acceptance
     public boolean[] testStrings() {
 
         boolean[] ret = new boolean[this.inputStrings.size()];
@@ -167,6 +206,7 @@ public class DFA {
         return ret;
     }
 
+    // Prints the results of testing the associated input strings
     public void printStringTests() {
         boolean[] results = this.testStrings();
         int yesCount = 0;
@@ -189,6 +229,7 @@ public class DFA {
         System.out.printf("Yes:%d No:%d\n", yesCount, noCount);
     }
 
+    // Prints information about the DFA in the required format
     public void print(){
         System.out.print("Sigma:");
         for (char c : this.alphabet)
@@ -205,7 +246,9 @@ public class DFA {
         }
         System.out.println("--------------------------------");
         System.out.printf("%d:   Initial State\n", initialState);
-        System.out.printf("%s:   Accepting State(s)\n", String.join(",", acceptingStates.stream().map(Object::toString).collect(Collectors.toList())));
+        System.out.printf("%s:   Accepting State(s)\n", String.join(",", 
+            // This converts the list of numbers to a list of strings
+            acceptingStates.stream().map(Object::toString).collect(Collectors.toList())));
         System.out.println();
     }
 }
