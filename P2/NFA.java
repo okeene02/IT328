@@ -10,7 +10,7 @@ public class NFA {
     ArrayList<Character> alphabet;
     ArrayList<ArrayList<Set<Integer>>> transitionTable;
     int initialState;
-    ArrayList<Integer> acceptingStates;
+    Set<Integer> acceptingStates;
     ArrayList<String> inputStrings;
     final int NUM_INPUT_STRINGS = 30;
 
@@ -120,7 +120,7 @@ public class NFA {
             // remove "Accepting State(s):"
             data = data.substring(20);
             String[] arrayOfStates = data.split(",");
-            acceptingStates = new ArrayList<>(arrayOfStates.length);
+            acceptingStates = new HashSet<>(arrayOfStates.length);
             for(String state : arrayOfStates){
                 acceptingStates.add(Integer.parseInt(state));
             }

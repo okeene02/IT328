@@ -9,13 +9,13 @@ public class DFA {
     ArrayList<Character> alphabet;
     ArrayList<ArrayList<Integer>> transitionTable;
     int initialState;
-    ArrayList<Integer> acceptingStates;
+    Set<Integer> acceptingStates;
     ArrayList<String> inputStrings;
     final int NUM_INPUT_STRINGS = 30;
 
     // Construct a DFA from components
     public DFA(int numberOfStates, ArrayList<Character> alphabet, ArrayList<ArrayList<Integer>> transitionTable, 
-               int initialState, ArrayList<Integer> acceptingStates, ArrayList<String> inputStrings) {
+               int initialState, Set<Integer> acceptingStates, ArrayList<String> inputStrings) {
             
             this.numberOfStates = numberOfStates;
             this.alphabet = alphabet;
@@ -46,7 +46,7 @@ public class DFA {
 
         // Prepare the new transition table and list of accepting states
         this.transitionTable = new ArrayList<>();
-        this.acceptingStates = new ArrayList<>();
+        this.acceptingStates = new HashSet<>();
 
         // Main loop. Iterates over the states array, whose size may increase within the loop
         for (int stateIndex = 0; stateIndex < states.size(); stateIndex++) {
@@ -128,7 +128,7 @@ public class DFA {
 
         // Prepare the structures for storing the combined states and accepting states
         ArrayList<Set<Integer>> newStates = new ArrayList<>();
-        ArrayList<Integer> newAcceptingStates = new ArrayList<>();
+        Set<Integer> newAcceptingStates = new HashSet<>();
 
         // Iterate over the states of the unminimized DFA
         for (int state = 0; state < this.numberOfStates; state++) {
