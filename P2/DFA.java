@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -236,7 +235,8 @@ public class DFA {
             System.out.printf("%6c", c);
         System.out.println();
 
-        System.out.println("--------------------------------");
+        // System.out.println("--------------------------------");
+        System.out.println(new String(new char[6*this.alphabet.size() + 6]).replace("\0", "-"));
         for(int i = 0; i < numberOfStates; i++){
             System.out.printf("%5d:", i);
             for(int j = 0; j < alphabet.size(); j++){
@@ -244,7 +244,8 @@ public class DFA {
             }
             System.out.println();
         }
-        System.out.println("--------------------------------");
+        // System.out.println("--------------------------------");
+        System.out.println(new String(new char[6*this.alphabet.size() + 6]).replace("\0", "-"));
         System.out.printf("%d:   Initial State\n", initialState);
         System.out.printf("%s:   Accepting State(s)\n", String.join(",", 
             // This converts the list of numbers to a list of strings
